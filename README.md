@@ -68,11 +68,7 @@ Nothing is sent over the network. All rendering happens locally in the browser.
 | `icons/` | Extension icons |
 
 ## Credits
-
-Created by **S a i** ([@saivx](https://github.com/saivx)).
-
 Built with these open-source libraries:
-
 - [marked](https://github.com/markedjs/marked) for Markdown parsing
 - [highlight.js](https://github.com/highlightjs/highlight.js) for syntax highlighting
 
