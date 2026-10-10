@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MD Slides</title>
+<link rel="stylesheet" href="viewer.css">
+<script src="marked.min.js"></script>
+<script src="highlight.min.js"></script>
+</head>
+<body>
+<div id="bar">
+  <button id="sideBtn" title="Folder sidebar (B)">&#9776;</button>
+  <span class="title" id="docTitle">MD Slides</span>
+  <button id="openBtn" title="Open a file by path (O)">Open&hellip;</button>
+  <span id="liveTag" hidden>&#9679; live</span>
+  <select id="toc" title="Jump to section" style="max-width:30vw"></select>
+  <span class="sp"></span>
+  <span id="pager"><input id="jump" type="text" inputmode="numeric" title="Jump to page (G)" aria-label="Page number"><span id="total"></span></span>
+  <span class="zoomgrp"><button id="zOut" title="Zoom out (-)">&minus;</button><button id="zPct" title="Zoom level - click to reset to 100% (0)">100%</button><button id="zIn" title="Zoom in (+)">+</button><span class="seg" id="fitSeg"><button id="fitDef" title="Default size - same font size on every page (D)"></button><button id="fitW" title="Fit to width (W)"></button><button id="fitH" title="Fit to height (H)"></button></span></span>
+  <button id="modeBtn" title="Toggle slide / all-pages view (A)">All pages</button>
+  <button id="htmlBtn" title="Export one self-contained HTML file (images inlined)">Export HTML</button>
+  <button id="pdfBtn" title="Print / Save as PDF (uses PDF settings)">Export PDF</button>
+  <button id="setBtn" title="Settings">&#9881; Settings</button>
+  <button id="helpBtn" title="Help (?)">?</button>
+</div>
+<div id="main">
+  <aside id="side" hidden>
+    <div class="sidehead"><span id="sideTitle">Folder</span><button id="sideRefresh" title="Refresh list">&#8635;</button></div>
+    <ul id="fileList"></ul>
+  </aside>
+  <div id="stage">
+    <div id="scroller"></div>
+    <button class="nav" id="prev" title="Previous (&larr;)" aria-label="Previous">&#8592;</button>
+    <button class="nav" id="next" title="Next (&rarr;)" aria-label="Next">&#8594;</button>
+    <div id="progress"></div>
+  </div>
+</div>
+<div id="tblOverlay" hidden><div class="ov-head"><span id="ovTitle">Table</span><button id="ovClose">Close (Esc)</button></div><div class="ov-body markdown-body" id="ovBody"></div></div>
+<div id="wm"></div>
+<div id="toast"></div>
+
+<dialog id="setDlg">
+  <div class="dlg-head"><span>Settings</span><button id="setClose">Close</button></div>
+  <div class="dlg-body" id="setBody"></div>
+  <div class="dlg-foot"><button id="setReset">Reset to defaults</button><span class="hint">Saved automatically; synced across your Chrome profiles when sync is on.</span></div>
+</dialog>
+
+<dialog id="helpDlg">
+  <div class="dlg-head"><span>MD Slides &ndash; Help</span><button id="helpClose">Close</button></div>
+  <div class="dlg-body">
+    <h4>Getting started</h4>
+    <ol>
+      <li>In <b>chrome://extensions</b> open this extension&rsquo;s <b>Details</b> and turn on <b>Allow access to file URLs</b> (required for local files).</li>
+      <li>Open any local <code>.md</code> file in Chrome (<code>file:///...</code>) and it opens here automatically. Or click <b>Open&hellip;</b> and paste a path.</li>
+      <li>The file is re-read every second, so changes you save in your editor appear on screen without a refresh.</li>
+    </ol>
+    <h4>Pages</h4>
+    <ul>
+      <li>Each <b>H1</b> is one page (Settings: also split on <b>H2</b>). Tall pages scroll. The zoom controls work like Chrome&rsquo;s PDF viewer: <b>&minus; 100% +</b> zoom, click the percentage to reset, and the three icons beside it choose the page mode (the active one is highlighted): <b>default size</b> (same font size on every page, for consistent reading), <b>fit to width</b> (fills the screen width, good for projectors) and <b>fit to height</b> (shrinks a long page to one screen).</li>
+      <li><b>All pages</b> shows the whole document as one scroll. The page box (e.g. <i>3 / 10</i>) accepts a number to jump.</li>
+      <li>The <b>&#9776;</b> sidebar lists the <code>.md</code> files in the file&rsquo;s folder and sub-folders.</li>
+    </ul>
+    <h4>Shortcuts</h4>
+    <table>
+      <tr><td><kbd>&rarr;</kbd> <kbd>&larr;</kbd></td><td>Next / previous page</td></tr>
+      <tr><td><kbd>Home</kbd> <kbd>End</kbd></td><td>First / last page</td></tr>
+      <tr><td><kbd>G</kbd></td><td>Jump to page (focus the page box)</td></tr>
+      <tr><td><kbd>A</kbd></td><td>Slides / all pages</td></tr>
+      <tr><td><kbd>B</kbd></td><td>Folder sidebar</td></tr>
+      <tr><td><kbd>+</kbd> <kbd>-</kbd> <kbd>0</kbd></td><td>Zoom in / out / reset to 100%</td></tr>
+      <tr><td><kbd>W</kbd> <kbd>H</kbd> <kbd>D</kbd></td><td>Fit to width / fit to height / default size</td></tr>
+      <tr><td><kbd>T</kbd></td><td>Cycle theme</td></tr>
+      <tr><td><kbd>F</kbd></td><td>Full screen</td></tr>
+      <tr><td><kbd>O</kbd></td><td>Open a file by path</td></tr>
+      <tr><td><kbd>?</kbd></td><td>This help</td></tr>
+    </table>
+    <h4>Content</h4>
+    <ul>
+      <li>GitHub-style rendering, syntax-coloured code, task lists, tables.</li>
+      <li><b>Images and links</b> relative to the file work (<code>![](img/a.png)</code>, <code>[x](other.md)</code>); links to other <code>.md</code> files open in the viewer.</li>
+      <li><b>Tables:</b> click a column header to sort (again to reverse, a third time to reset); the header row stays visible while scrolling. Columns wrap to fit the page. On a table that is too wide for the page, faint icons appear at its top right: switch between <b>wrap</b> and <b>scroll sideways</b> (first column frozen), or open the table <b>full screen</b>. Settings &rarr; Tables sets the default.</li>
+      <li><b>Code blocks:</b> hover and click <b>Copy</b>.</li>
+    </ul>
+    <h4>Export</h4>
+    <ul>
+      <li><b>Export HTML</b> &ndash; one self-contained file (CSS and images embedded) that works anywhere.</li>
+      <li><b>Export PDF</b> &ndash; opens Chrome&rsquo;s print dialog; choose <b>Save as PDF</b>. Every page starts on a new sheet. Header, footer, page numbers and a &ldquo;Confidential&rdquo; watermark come from <b>Settings &rarr; PDF</b>. In the print dialog, <b>untick &ldquo;Headers and footers&rdquo;</b> (Chrome&rsquo;s own) and tick <b>Background graphics</b>. Page numbers like &ldquo;Page 2 of 9&rdquo; need Chrome 131 or later.</li>
+    </ul>
+    <h4>Notes</h4>
+    <ul>
+      <li>Reload the extension on <b>chrome://extensions</b> after changing its files.</li>
+      <li>Drag-and-dropped files are shown as a static copy (no live reload, no relative images).</li>
+    </ul>
+  </div>
+</dialog>
+
+<script src="viewer.js"></script>
+</body>
+</html>
