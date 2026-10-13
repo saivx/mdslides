@@ -3,7 +3,6 @@
   "name": "MD Slides",
   "version": "2.0",
   "description": "View Markdown files GitHub-style, one H1 per slide, with live reload, folder browsing and HTML/PDF export.",
-  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAt5rFC5MsdihOUNBAEsR0PnqMkn3CT5JORUgfN5C22CuelWXA+jVuyZeMTu8kkhLcl5Apqv2/H7f6mTsckwL3cP+NDTSA6ldOI9rKQC5jzEiGAlzhMLH3Vy2XMQZyqxu9puq00Uh2rmwDJXr21qdwxdl5MXI6YRXxgPpFi/QQOopc1AOs09S7gUVe4FvUJ0EfRkthV0eQQEGB0yf/Kpn4KGh8r62M1xzEsvoBbvchJ5LdEcDyr2NwCTbHqTOxFoqu69KfEFDJ9cIIaYhhblTK/boOWw6tnGJZ/wH0TkcFWCbvTwwqNyL11t9cgvjCLUqj2xiq0LrLh2ITgVVzYE3r3QIDAQAB",
   "permissions": [
     "webNavigation",
     "tabs",
