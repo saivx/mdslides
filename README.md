@@ -12,6 +12,7 @@ A Chrome extension that opens local Markdown files as a slide show. Each `# H1` 
 - **Zoom and fit.** Manual zoom, fit to width, or fit to height so long slides fit one screen.
 - **Themes.** GitHub, GitHub Colorful, GitHub Dark, VS Code Dark+, Notion, Solarized and Dracula.
 - **Code and tables.** Syntax highlighting with a copy button, sortable tables, and a full-screen table view.
+- **Diagrams.** ```mermaid code blocks render as diagrams (flowcharts, sequence, etc.), following the light/dark theme.
 - **Relative links and images.** Links between `.md` files and local images work.
 - **Export.** Save as a standalone HTML file or print to PDF, with configurable headers, footers, margins and watermark.
 
@@ -65,12 +66,14 @@ Nothing is sent over the network. All rendering happens locally in the browser.
 | `viewer.html`, `viewer.css`, `viewer.js` | The viewer UI |
 | `marked.min.js` | Markdown parser |
 | `highlight.min.js` | Code syntax highlighting |
+| `mermaid.min.js` | Diagram rendering (Mermaid 11.17.2, bundled, MIT) |
 | `icons/` | Extension icons |
 
 ## Credits
 Built with these open-source libraries:
 - [marked](https://github.com/markedjs/marked) for Markdown parsing
 - [highlight.js](https://github.com/highlightjs/highlight.js) for syntax highlighting
+- [Mermaid](https://github.com/mermaid-js/mermaid) for diagrams
 
 UI Themes inspired by GitHub, VS Code, Notion, Solarized and Dracula.
 

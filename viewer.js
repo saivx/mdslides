@@ -75,11 +75,35 @@
   function slug(t) { return t.trim().toLowerCase().replace(/[^\w\- \u00c0-\uffff]/g, '').replace(/ /g, '-'); }
   function isRelative(s) { return !!s && !/^([a-z][a-z0-9+.\-]*:|\/\/|#)/i.test(s); }
 
+  /* mermaid: code blocks become placeholders, rendered to SVG strings up front (works for hidden pages) and substituted in */
+  var mmCodes = [], mmSvg = [], mmSeq = 0;
+  function isDark() { return /dark|dracula/.test(S.theme); }
+  function renderDiagrams() {
+    if (!mmCodes.length || typeof mermaid === 'undefined') return Promise.resolve();
+    mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', theme: isDark() ? 'dark' : 'default' });
+    var chain = Promise.resolve();
+    mmSvg = [];
+    mmCodes.forEach(function (code, i) {
+      var id = 'mmd' + (++mmSeq);
+      chain = chain.then(function () { return mermaid.render(id, code); }).then(function (r) { mmSvg[i] = r.svg; }, function (e) {
+        var junk = document.getElementById('d' + id); if (junk) junk.remove();
+        mmSvg[i] = '<pre class="mermaid-error">Mermaid error: ' + esc(e && e.message || e) + '\n\n' + esc(code) + '</pre>';
+      });
+    });
+    return chain;
+  }
+  function withDiagrams(html) {
+    return html.replace(/<div class="mermaid-diagram" data-mm="(\d+)"><\/div>/g, function (m, i) {
+      return '<div class="mermaid-diagram">' + (mmSvg[+i] || '') + '</div>';
+    });
+  }
+
   function setupMarked() {
     if (setupMarked.done || typeof hljs === 'undefined') return;
     setupMarked.done = true;
     marked.use({ renderer: { code: function (code, info) {
       var lang = ((info || '').match(/\S+/) || [''])[0], v;
+      if (lang === 'mermaid' && typeof mermaid !== 'undefined') { mmCodes.push(code); return '<div class="mermaid-diagram" data-mm="' + (mmCodes.length - 1) + '"></div>'; }
       try {
         v = (lang && hljs.getLanguage(lang)) ? hljs.highlight(code, { language: lang, ignoreIllegals: true }).value : hljs.highlightAuto(code).value;
       } catch (e) { return false; }
@@ -118,7 +142,7 @@
   function parse(md) {
     setupMarked();
     md = md.replace(/^\uFEFF/, '');
-    slugMap = {};
+    slugMap = {}; mmCodes = []; mmSvg = [];
     var toks = marked.lexer(md), lvl = parseInt(S.split, 10) || 1;
     var groups = [], g = null, h1 = '';
     toks.forEach(function (t) {
@@ -275,7 +299,7 @@
     sections.forEach(function (s, i) {
       var p = document.createElement('section'); p.className = 'page'; p.dataset.i = i;
       var b = document.createElement('div'); b.className = 'markdown-body';
-      b.innerHTML = (s.crumb ? '<div class="crumb">' + esc(s.crumb) + '</div>' : '') + s.html;
+      b.innerHTML = (s.crumb ? '<div class="crumb">' + esc(s.crumb) + '</div>' : '') + withDiagrams(s.html);
       decorate(b); p.appendChild(b);
       if (!all && i !== cur) p.style.display = 'none';
       scroller.appendChild(p);
@@ -385,6 +409,11 @@
     docFile = name || 'document'; docName = docFile.replace(/\.[^.]*$/, '');
     $('docTitle').textContent = docFile; document.title = docName + ' - MD Slides';
     parse(text); buildToc();
+    var seq = ++loadSeq;
+    renderDiagrams().then(function () { if (seq === loadSeq) finishLoad(mode, keepScroll); });
+  }
+  var loadSeq = 0;
+  function finishLoad(mode, keepScroll) {
     if (mode === 'first') { var h = parseInt((location.hash || '').slice(1), 10); cur = (h >= 1 && h <= sections.length) ? h - 1 : 0; }
     else if (mode === 'live') cur = Math.min(cur, sections.length - 1);
     else cur = 0;
@@ -476,7 +505,9 @@
   /* ------------------------------------------------------------------ theme / mode / settings UI */
   function setTheme(t) {
     if (!THEMES.some(function (x) { return x[0] === t; })) t = 'github-light';
+    var wasDark = isDark();
     S.theme = t; root.setAttribute('data-theme', t);
+    if (mmCodes.length && wasDark !== isDark()) { var c = cur; renderDiagrams().then(function () { render(); go(c); }); }
     var sel = $('s_theme'); if (sel) sel.value = t;
     fitSoon();
   }
@@ -560,7 +591,7 @@
       sections.forEach(function (s) {
         chain = chain.then(function () {
           var t = document.createElement('template');
-          t.innerHTML = (s.crumb ? '<div class="crumb">' + esc(s.crumb) + '</div>' : '') + s.html;
+          t.innerHTML = (s.crumb ? '<div class="crumb">' + esc(s.crumb) + '</div>' : '') + withDiagrams(s.html);
           var imgs = [].slice.call(t.content.querySelectorAll('img[data-local]'));
           return Promise.all(imgs.map(function (im) {
             return dataUrl(im.dataset.local).then(function (u) { im.src = u; }).catch(function () { /* leave broken */ });

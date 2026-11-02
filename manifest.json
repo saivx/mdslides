@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "MD Slides",
-  "version": "2.0",
+  "version": "2.1",
   "description": "View Markdown files GitHub-style, one H1 per slide, with live reload, folder browsing and HTML/PDF export.",
   "permissions": [
     "webNavigation",
